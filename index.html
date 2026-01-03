@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Electron 게임</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        overflow: hidden;
+      }
+
+      #gameContainer {
+        position: relative;
+        width: 800px;
+        height: 600px;
+        background: #1a1a2e;
+        border-radius: 10px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      #ui {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        color: white;
+        font-size: 16px;
+        z-index: 10;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 15px;
+        border-radius: 10px;
+      }
+
+      #ui div {
+        margin-bottom: 8px;
+      }
+
+      #expBarContainer {
+        width: 200px;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        margin-top: 5px;
+        overflow: hidden;
+      }
+
+      #expBar {
+        height: 100%;
+        background: linear-gradient(90deg, #4ecdc4, #44a08d);
+        width: 0%;
+        transition: width 0.1s;
+      }
+
+      #instructions {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        text-align: center;
+        font-size: 14px;
+        z-index: 10;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 10px 20px;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="gameContainer">
+      <div id="ui">
+        <div>점수: <span id="score">0</span></div>
+        <div>레벨: <span id="level">1</span></div>
+        <div>
+          경험치: <span id="exp">0</span> / <span id="expMax">100</span>
+        </div>
+        <div id="expBarContainer">
+          <div id="expBar"></div>
+        </div>
+      </div>
+      <canvas id="gameCanvas"></canvas>
+      <div id="instructions">
+        WASD 또는 방향키로 이동 | 적을 처치하고 경험치를 모으세요!
+      </div>
+    </div>
+    <script src="game.js"></script>
+  </body>
+</html>
