@@ -120,7 +120,7 @@ export const WEAPONS_DB = {
       { dps: 7, count: 2, duration: 1.0 },
       { dps: 7, count: 2, duration: 1.2 },
       { dps: 7, count: 3, duration: 1.2 },
-      { dps: 7, count: 3, duration: 1.2, cooldownMult: 0.9 },
+      { dps: 7, count: 4, duration: 1.2, cooldownMult: 0.9 },
     ],
     evolution: {
       weaponId: "w_unchainedSpirits",
