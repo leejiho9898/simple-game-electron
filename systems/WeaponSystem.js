@@ -158,6 +158,9 @@ export class WeaponSystem {
     if (levelData.boltCount !== undefined) {
       instance.boltCount = levelData.boltCount;
     }
+    if (levelData.count !== undefined) {
+      instance.count = levelData.count;
+    }
   }
 
   // 무기 업데이트 (게임 루프에서 호출)
@@ -266,14 +269,23 @@ export class WeaponSystem {
     });
   }
 
-  // 1. Whip - 넓은 범위 좌우 번갈아 스윙
+  // 1. Whip - 넓은 범위 좌우 번갈아 스윙 (레벨 3 이상: 양옆 동시)
   updateWhip(weapon, playerPos, gameTime) {
     if (weapon.cooldownTimer >= weapon.cooldown) {
       weapon.cooldownTimer = 0;
-      weapon.swingDirection *= -1; // 좌우 전환
+
+      // 레벨 3 이상: 양옆 동시 스윙
+      if (weapon.level >= 3) {
+        weapon.swingDirections = [1, -1]; // 양옆 동시
+      } else {
+        // 레벨 3 미만: 좌우 번갈아
+        weapon.swingDirection *= -1;
+        weapon.swingDirections = [weapon.swingDirection];
+      }
+
       weapon.lastSwingTime = gameTime;
       weapon.isSwinging = true;
-      weapon.swingDuration = 0.3; // 스윙 지속 시간 증가
+      weapon.swingDuration = 0.3; // 스윙 지속 시간
       weapon.swingProgress = 0; // 스윙 진행도
     }
 
@@ -966,120 +978,127 @@ export class WeaponSystem {
 
     const isEvolution = weapon.weaponId === "w_bloodyTear";
     const range = (weapon.range || 1.0) * (isEvolution ? 120 : 100); // 진화는 더 넓은 범위
-    const angle = weapon.swingDirection === 1 ? Math.PI / 4 : -Math.PI / 4;
     const swingAngle = Math.PI / (isEvolution ? 2.0 : 2.5); // 진화는 더 넓은 각도
     const progress = weapon.swingProgress / 0.3;
 
-    if (isEvolution) {
-      // 피눈물: 어두운 빨강 + 피 효과
-      // 외곽 선 (어두운 빨강)
-      ctx.strokeStyle = "#8b0000";
-      ctx.lineWidth = 8;
-      ctx.beginPath();
-      ctx.arc(
-        playerPos.x,
-        playerPos.y,
-        range,
-        angle - swingAngle * (1 - progress),
-        angle + swingAngle * (1 - progress)
-      );
-      ctx.stroke();
+    // 레벨 3 이상: 양옆 동시, 미만: 한쪽만
+    const swingDirections = weapon.swingDirections || [
+      weapon.swingDirection || 1,
+    ];
 
-      // 중간 선 (진한 빨강)
-      ctx.strokeStyle = "#cc0000";
-      ctx.lineWidth = 6;
-      ctx.beginPath();
-      ctx.arc(
-        playerPos.x,
-        playerPos.y,
-        range * 0.95,
-        angle - swingAngle * (1 - progress),
-        angle + swingAngle * (1 - progress)
-      );
-      ctx.stroke();
+    // 각 방향에 대해 렌더링
+    swingDirections.forEach((direction) => {
+      const angle = direction === 1 ? Math.PI / 4 : -Math.PI / 4;
 
-      // 내부 선 (밝은 빨강)
-      ctx.strokeStyle = "#ff0000";
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.arc(
-        playerPos.x,
-        playerPos.y,
-        range * 0.9,
-        angle - swingAngle * (1 - progress),
-        angle + swingAngle * (1 - progress)
-      );
-      ctx.stroke();
-
-      // 피 파티클 효과
-      const endAngle =
-        angle + swingAngle * (1 - progress) * weapon.swingDirection;
-      const endX = playerPos.x + Math.cos(endAngle) * range;
-      const endY = playerPos.y + Math.sin(endAngle) * range;
-
-      // 큰 피 방울
-      ctx.fillStyle = "#8b0000";
-      ctx.beginPath();
-      ctx.arc(endX, endY, 12, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "#ff0000";
-      ctx.beginPath();
-      ctx.arc(endX, endY, 8, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 작은 피 방울들
-      for (let i = 0; i < 5; i++) {
-        const dropAngle = endAngle + (Math.random() - 0.5) * 0.5;
-        const dropDist = 15 + Math.random() * 10;
-        const dropX = endX + Math.cos(dropAngle) * dropDist;
-        const dropY = endY + Math.sin(dropAngle) * dropDist;
-        ctx.fillStyle = `rgba(255, 0, 0, ${0.6 + Math.random() * 0.4})`;
+      if (isEvolution) {
+        // 피눈물: 어두운 빨강 + 피 효과
+        // 외곽 선 (어두운 빨강)
+        ctx.strokeStyle = "#8b0000";
+        ctx.lineWidth = 8;
         ctx.beginPath();
-        ctx.arc(dropX, dropY, 3 + Math.random() * 2, 0, Math.PI * 2);
+        ctx.arc(
+          playerPos.x,
+          playerPos.y,
+          range,
+          angle - swingAngle * (1 - progress),
+          angle + swingAngle * (1 - progress)
+        );
+        ctx.stroke();
+
+        // 중간 선 (진한 빨강)
+        ctx.strokeStyle = "#cc0000";
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.arc(
+          playerPos.x,
+          playerPos.y,
+          range * 0.95,
+          angle - swingAngle * (1 - progress),
+          angle + swingAngle * (1 - progress)
+        );
+        ctx.stroke();
+
+        // 내부 선 (밝은 빨강)
+        ctx.strokeStyle = "#ff0000";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(
+          playerPos.x,
+          playerPos.y,
+          range * 0.9,
+          angle - swingAngle * (1 - progress),
+          angle + swingAngle * (1 - progress)
+        );
+        ctx.stroke();
+
+        // 피 파티클 효과
+        const endAngle = angle + swingAngle * (1 - progress) * direction;
+        const endX = playerPos.x + Math.cos(endAngle) * range;
+        const endY = playerPos.y + Math.sin(endAngle) * range;
+
+        // 큰 피 방울
+        ctx.fillStyle = "#8b0000";
+        ctx.beginPath();
+        ctx.arc(endX, endY, 12, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#ff0000";
+        ctx.beginPath();
+        ctx.arc(endX, endY, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 작은 피 방울들
+        for (let i = 0; i < 5; i++) {
+          const dropAngle = endAngle + (Math.random() - 0.5) * 0.5;
+          const dropDist = 15 + Math.random() * 10;
+          const dropX = endX + Math.cos(dropAngle) * dropDist;
+          const dropY = endY + Math.sin(dropAngle) * dropDist;
+          ctx.fillStyle = `rgba(255, 0, 0, ${0.6 + Math.random() * 0.4})`;
+          ctx.beginPath();
+          ctx.arc(dropX, dropY, 3 + Math.random() * 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else {
+        // 기본 채찍
+        ctx.strokeStyle = "#cc0000";
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.arc(
+          playerPos.x,
+          playerPos.y,
+          range,
+          angle - swingAngle * (1 - progress),
+          angle + swingAngle * (1 - progress)
+        );
+        ctx.stroke();
+
+        ctx.strokeStyle = "#ff6b6b";
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(
+          playerPos.x,
+          playerPos.y,
+          range * 0.9,
+          angle - swingAngle * (1 - progress),
+          angle + swingAngle * (1 - progress)
+        );
+        ctx.stroke();
+
+        const endAngle = angle + swingAngle * (1 - progress) * direction;
+        const endX = playerPos.x + Math.cos(endAngle) * range;
+        const endY = playerPos.y + Math.sin(endAngle) * range;
+
+        ctx.fillStyle = "#ff0000";
+        ctx.beginPath();
+        ctx.arc(endX, endY, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(endX, endY, 4, 0, Math.PI * 2);
         ctx.fill();
       }
-    } else {
-      // 기본 채찍
-      ctx.strokeStyle = "#cc0000";
-      ctx.lineWidth = 6;
-      ctx.beginPath();
-      ctx.arc(
-        playerPos.x,
-        playerPos.y,
-        range,
-        angle - swingAngle * (1 - progress),
-        angle + swingAngle * (1 - progress)
-      );
-      ctx.stroke();
-
-      ctx.strokeStyle = "#ff6b6b";
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.arc(
-        playerPos.x,
-        playerPos.y,
-        range * 0.9,
-        angle - swingAngle * (1 - progress),
-        angle + swingAngle * (1 - progress)
-      );
-      ctx.stroke();
-
-      const endAngle =
-        angle + swingAngle * (1 - progress) * weapon.swingDirection;
-      const endX = playerPos.x + Math.cos(endAngle) * range;
-      const endY = playerPos.y + Math.sin(endAngle) * range;
-
-      ctx.fillStyle = "#ff0000";
-      ctx.beginPath();
-      ctx.arc(endX, endY, 8, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.arc(endX, endY, 4, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    });
   }
 
   // 회전형 무기 렌더링 (King Bible)
@@ -1431,15 +1450,19 @@ export class WeaponSystem {
     switch (baseWeaponId) {
       case "w_whip":
       case "w_bloodyTear":
-        // 좌우 스윙 충돌
+        // 좌우 스윙 충돌 (레벨 3 이상: 양옆 동시)
         if (weapon.isSwinging) {
-          const range = (weapon.range || 1.0) * 100; // 렌더링 범위와 일치
-          const angle =
-            weapon.swingDirection === 1 ? Math.PI / 4 : -Math.PI / 4;
-          const swingAngle = Math.PI / 2.5; // 렌더링과 일치
+          const isEvolution = weapon.weaponId === "w_bloodyTear";
+          const range = (weapon.range || 1.0) * (isEvolution ? 120 : 100); // 렌더링 범위와 일치
+          const swingAngle = Math.PI / (isEvolution ? 2.0 : 2.5); // 렌더링과 일치
           const progress = weapon.swingProgress
             ? weapon.swingProgress / 0.3
             : 1;
+
+          // 레벨 3 이상: 양옆 동시, 미만: 한쪽만
+          const swingDirections = weapon.swingDirections || [
+            weapon.swingDirection || 1,
+          ];
 
           enemies.forEach((enemy, index) => {
             const dx = enemy.x - playerPos.x;
@@ -1447,18 +1470,31 @@ export class WeaponSystem {
             const distance = Math.sqrt(dx * dx + dy * dy);
             const enemyAngle = Math.atan2(dy, dx);
 
-            // 부채꼴 범위 체크 (스윙 진행도 반영)
-            const minAngle = angle - swingAngle * (1 - progress);
-            const maxAngle = angle + swingAngle * (1 - progress);
-            if (
-              distance < range + enemy.radius &&
-              enemyAngle >= minAngle &&
-              enemyAngle <= maxAngle
-            ) {
-              const lastHitTime = weapon.enemyHitTimes.get(index) || 0;
-              if (gameTime - lastHitTime >= 0.1) {
-                hits.push({ enemyIndex: index, damage: weapon.damage });
-                weapon.enemyHitTimes.set(index, gameTime);
+            // 각 방향에 대해 충돌 체크
+            for (const direction of swingDirections) {
+              const angle = direction === 1 ? Math.PI / 4 : -Math.PI / 4;
+
+              // 부채꼴 범위 체크 (스윙 진행도 반영)
+              const minAngle = angle - swingAngle * (1 - progress);
+              const maxAngle = angle + swingAngle * (1 - progress);
+
+              // 각도 범위 체크 (각도 정규화)
+              let angleInRange = false;
+              if (minAngle <= maxAngle) {
+                // 일반적인 경우
+                angleInRange = enemyAngle >= minAngle && enemyAngle <= maxAngle;
+              } else {
+                // 각도가 -PI ~ PI 경계를 넘는 경우
+                angleInRange = enemyAngle >= minAngle || enemyAngle <= maxAngle;
+              }
+
+              if (distance < range + enemy.radius && angleInRange) {
+                const lastHitTime = weapon.enemyHitTimes.get(index) || 0;
+                if (gameTime - lastHitTime >= 0.1) {
+                  hits.push({ enemyIndex: index, damage: weapon.damage });
+                  weapon.enemyHitTimes.set(index, gameTime);
+                  break; // 한 번만 히트
+                }
               }
             }
           });
@@ -1484,21 +1520,30 @@ export class WeaponSystem {
 
       case "w_kingBible":
       case "w_unchainedSpirits":
-        // 회전 궤도 충돌
+        // 회전 궤도 충돌 (모든 성경에 대해 체크)
+        const isEvolution = weapon.weaponId === "w_unchainedSpirits";
+        const count = isEvolution ? weapon.count || 5 : weapon.count || 1;
         const range = (weapon.range || 1.0) * 50;
-        const weaponX = playerPos.x + Math.cos(weapon.angle) * range;
-        const weaponY = playerPos.y + Math.sin(weapon.angle) * range;
+        const angleStep = (Math.PI * 2) / count;
 
         enemies.forEach((enemy, index) => {
-          const dx = weaponX - enemy.x;
-          const dy = weaponY - enemy.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
+          // 모든 성경에 대해 충돌 체크
+          for (let i = 0; i < count; i++) {
+            const angle = weapon.angle + angleStep * i;
+            const weaponX = playerPos.x + Math.cos(angle) * range;
+            const weaponY = playerPos.y + Math.sin(angle) * range;
 
-          if (distance < enemy.radius + 8) {
-            const lastHitTime = weapon.enemyHitTimes.get(index) || 0;
-            if (gameTime - lastHitTime >= weapon.cooldown) {
-              hits.push({ enemyIndex: index, damage: weapon.damage || 0 });
-              weapon.enemyHitTimes.set(index, gameTime);
+            const dx = weaponX - enemy.x;
+            const dy = weaponY - enemy.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < enemy.radius + 8) {
+              const lastHitTime = weapon.enemyHitTimes.get(index) || 0;
+              if (gameTime - lastHitTime >= weapon.cooldown) {
+                hits.push({ enemyIndex: index, damage: weapon.damage || 0 });
+                weapon.enemyHitTimes.set(index, gameTime);
+                break; // 한 번만 히트
+              }
             }
           }
         });
@@ -1600,10 +1645,10 @@ export class WeaponSystem {
               proj.hasExploded = true;
               proj.lifetime = 0.3;
             } else if (
-              proj.weaponId !== "w_runetracer" &&
-              proj.weaponId !== "w_noFuture"
+              proj.weaponId !== "w_homingMissile" &&
+              proj.weaponId !== "w_advancedMissile"
             ) {
-              // Runetracer/NoFuture는 관통, 나머지는 제거
+              // 유도탄만 관통, 나머지는 제거
               proj.shouldRemove = true;
             }
 
