@@ -74,24 +74,6 @@ export const WEAPONS_DB = {
       requiredPassiveLevel: 3,
     },
   },
-  w_cross: {
-    id: "w_cross",
-    name: "십자가",
-    maxLevel: 5,
-    tags: ["projectile", "boomerang"],
-    levels: [
-      { damage: 9, projectileSpeed: 1.0 },
-      { damage: 11, projectileSpeed: 1.0 },
-      { damage: 11, projectileSpeed: 1.15 },
-      { damage: 14, projectileSpeed: 1.15 },
-      { damage: 14, projectileSpeed: 1.3 },
-    ],
-    evolution: {
-      weaponId: "w_heavenSword",
-      requiredPassive: "p_clover",
-      requiredPassiveLevel: 3,
-    },
-  },
   w_garlic: {
     id: "w_garlic",
     name: "마늘 오라",
@@ -343,20 +325,6 @@ export const EVOLUTIONS_DB = {
       damage: 15,
       projectileCount: 4,
       cooldown: 0.5,
-    },
-  },
-  w_heavenSword: {
-    id: "w_heavenSword",
-    name: "천상의 검",
-    baseWeapon: "w_cross",
-    requiredPassive: "p_clover",
-    requiredPassiveLevel: 3,
-    description: "Cross 강화 + 크리티컬/관통 강화",
-    stats: {
-      damage: 18,
-      projectileSpeed: 1.5,
-      critChance: 0.3,
-      pierce: 3,
     },
   },
   w_soulEater: {

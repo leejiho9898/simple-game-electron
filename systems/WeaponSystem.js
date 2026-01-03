@@ -57,13 +57,13 @@ export class WeaponSystem {
     // 기본 무기 또는 진화 무기 확인
     let weaponData = WEAPONS_DB[weaponId];
     let isEvolution = false;
-    
+
     if (!weaponData) {
       // 진화 무기인지 확인
       weaponData = EVOLUTIONS_DB[weaponId];
       isEvolution = true;
     }
-    
+
     if (!weaponData) return null;
 
     const levelData = weaponData.levels[level - 1];
@@ -97,12 +97,12 @@ export class WeaponSystem {
     // 기본 무기 또는 진화 무기 확인
     let weaponData = WEAPONS_DB[instance.weaponId];
     let isEvolution = false;
-    
+
     if (!weaponData) {
       weaponData = EVOLUTIONS_DB[instance.weaponId];
       isEvolution = true;
     }
-    
+
     if (!weaponData) return;
 
     // 진화 무기는 stats를 사용, 기본 무기는 levels 사용
@@ -176,11 +176,25 @@ export class WeaponSystem {
           break;
         case "w_knife":
         case "w_thousandEdge":
-          this.updateKnife(weapon, playerPos, playerVelocity, gameTime, canvas, enemies);
+          this.updateKnife(
+            weapon,
+            playerPos,
+            playerVelocity,
+            gameTime,
+            canvas,
+            enemies
+          );
           break;
         case "w_homingMissile":
         case "w_advancedMissile":
-          this.updateHomingMissile(weapon, playerPos, playerVelocity, gameTime, canvas, enemies);
+          this.updateHomingMissile(
+            weapon,
+            playerPos,
+            playerVelocity,
+            gameTime,
+            canvas,
+            enemies
+          );
           break;
         case "w_magicWand":
         case "w_holyWand":
@@ -188,10 +202,6 @@ export class WeaponSystem {
           break;
         case "w_axe":
           this.updateAxe(weapon, playerPos, gameTime, canvas);
-          break;
-        case "w_cross":
-        case "w_heavenSword":
-          this.updateCross(weapon, playerPos, playerVelocity, gameTime, canvas);
           break;
         case "w_garlic":
         case "w_soulEater":
@@ -224,7 +234,11 @@ export class WeaponSystem {
     this.projectiles.forEach((proj, index) => {
       if (proj.update) {
         // 유도 무기는 enemies도 전달
-        if ((proj.weaponId === "w_homingMissile" || proj.weaponId === "w_advancedMissile") && proj.update.length > 2) {
+        if (
+          (proj.weaponId === "w_homingMissile" ||
+            proj.weaponId === "w_advancedMissile") &&
+          proj.update.length > 2
+        ) {
           proj.update(deltaTime, canvas, enemies);
         } else {
           proj.update(deltaTime, canvas);
@@ -273,48 +287,48 @@ export class WeaponSystem {
     }
   }
 
-      // 2. Knife - 발사 시점의 가장 가까운 적 위치로 직선 발사
-      updateKnife(weapon, playerPos, playerVelocity, gameTime, canvas, enemies) {
-        if (weapon.cooldownTimer >= weapon.cooldown) {
-          weapon.cooldownTimer = 0;
+  // 2. Knife - 발사 시점의 가장 가까운 적 위치로 직선 발사
+  updateKnife(weapon, playerPos, playerVelocity, gameTime, canvas, enemies) {
+    if (weapon.cooldownTimer >= weapon.cooldown) {
+      weapon.cooldownTimer = 0;
 
-          // 발사 시점의 가장 가까운 적 찾기
-          let nearestEnemy = null;
-          let nearestDist = Infinity;
-          enemies.forEach((enemy) => {
-            if (enemy.hp <= 0) return;
-            const dx = enemy.x - playerPos.x;
-            const dy = enemy.y - playerPos.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < nearestDist) {
-              nearestDist = dist;
-              nearestEnemy = enemy;
-            }
-          });
+      // 발사 시점의 가장 가까운 적 찾기
+      let nearestEnemy = null;
+      let nearestDist = Infinity;
+      enemies.forEach((enemy) => {
+        if (enemy.hp <= 0) return;
+        const dx = enemy.x - playerPos.x;
+        const dy = enemy.y - playerPos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < nearestDist) {
+          nearestDist = dist;
+          nearestEnemy = enemy;
+        }
+      });
 
-          // 투사체 생성
-          for (let i = 0; i < weapon.projectileCount; i++) {
-            const projId = Math.random().toString(36).substr(2, 9);
-            
-            // 초기 방향 설정 (발사 시점의 적 위치로 고정)
-            let initialAngle = 0;
-            if (nearestEnemy) {
-              initialAngle = Math.atan2(
-                nearestEnemy.y - playerPos.y,
-                nearestEnemy.x - playerPos.x
-              );
-            } else if (playerVelocity.x !== 0 || playerVelocity.y !== 0) {
-              initialAngle = Math.atan2(playerVelocity.y, playerVelocity.x);
-            } else {
-              initialAngle = Math.random() * Math.PI * 2;
-            }
-            
-            // 여러 발사체일 경우 약간의 스프레드 추가
-            const spread = (i - (weapon.projectileCount - 1) / 2) * 0.1;
-            initialAngle += spread;
-            
-            this.projectiles.push({
-              id: projId,
+      // 투사체 생성
+      for (let i = 0; i < weapon.projectileCount; i++) {
+        const projId = Math.random().toString(36).substr(2, 9);
+
+        // 초기 방향 설정 (발사 시점의 적 위치로 고정)
+        let initialAngle = 0;
+        if (nearestEnemy) {
+          initialAngle = Math.atan2(
+            nearestEnemy.y - playerPos.y,
+            nearestEnemy.x - playerPos.x
+          );
+        } else if (playerVelocity.x !== 0 || playerVelocity.y !== 0) {
+          initialAngle = Math.atan2(playerVelocity.y, playerVelocity.x);
+        } else {
+          initialAngle = Math.random() * Math.PI * 2;
+        }
+
+        // 여러 발사체일 경우 약간의 스프레드 추가
+        const spread = (i - (weapon.projectileCount - 1) / 2) * 0.1;
+        initialAngle += spread;
+
+        this.projectiles.push({
+          id: projId,
           x: playerPos.x,
           y: playerPos.y,
           vx: Math.cos(initialAngle) * 400 * (weapon.projectileSpeed || 1.0),
@@ -340,51 +354,58 @@ export class WeaponSystem {
     }
   }
 
-      // 유도탄 - 가장 가까운 적을 자동 유도하는 투사체
-      updateHomingMissile(weapon, playerPos, playerVelocity, gameTime, canvas, enemies) {
-        if (weapon.cooldownTimer >= weapon.cooldown) {
-          weapon.cooldownTimer = 0;
+  // 유도탄 - 가장 가까운 적을 자동 유도하는 투사체
+  updateHomingMissile(
+    weapon,
+    playerPos,
+    playerVelocity,
+    gameTime,
+    canvas,
+    enemies
+  ) {
+    if (weapon.cooldownTimer >= weapon.cooldown) {
+      weapon.cooldownTimer = 0;
 
-          // 가장 가까운 적 찾기
-          let nearestEnemy = null;
-          let nearestDist = Infinity;
-          enemies.forEach((enemy) => {
-            if (enemy.hp <= 0) return;
-            const dx = enemy.x - playerPos.x;
-            const dy = enemy.y - playerPos.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < nearestDist) {
-              nearestDist = dist;
-              nearestEnemy = enemy;
-            }
-          });
+      // 가장 가까운 적 찾기
+      let nearestEnemy = null;
+      let nearestDist = Infinity;
+      enemies.forEach((enemy) => {
+        if (enemy.hp <= 0) return;
+        const dx = enemy.x - playerPos.x;
+        const dy = enemy.y - playerPos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < nearestDist) {
+          nearestDist = dist;
+          nearestEnemy = enemy;
+        }
+      });
 
-          // 투사체 생성
-          for (let i = 0; i < weapon.projectileCount; i++) {
-            const projId = Math.random().toString(36).substr(2, 9);
-            
-            // 초기 방향 설정
-            let initialAngle = 0;
-            if (nearestEnemy) {
-              initialAngle = Math.atan2(
-                nearestEnemy.y - playerPos.y,
-                nearestEnemy.x - playerPos.x
-              );
-            } else if (playerVelocity.x !== 0 || playerVelocity.y !== 0) {
-              initialAngle = Math.atan2(playerVelocity.y, playerVelocity.x);
-            } else {
-              initialAngle = Math.random() * Math.PI * 2;
-            }
-            
-            // 여러 발사체일 경우 약간의 스프레드 추가
-            const spread = (i - (weapon.projectileCount - 1) / 2) * 0.1;
-            initialAngle += spread;
-            
-            const isEvolution = weapon.weaponId === "w_advancedMissile";
-            const turnSpeed = isEvolution ? 6.0 : 4.0;
-            
-            this.projectiles.push({
-              id: projId,
+      // 투사체 생성
+      for (let i = 0; i < weapon.projectileCount; i++) {
+        const projId = Math.random().toString(36).substr(2, 9);
+
+        // 초기 방향 설정
+        let initialAngle = 0;
+        if (nearestEnemy) {
+          initialAngle = Math.atan2(
+            nearestEnemy.y - playerPos.y,
+            nearestEnemy.x - playerPos.x
+          );
+        } else if (playerVelocity.x !== 0 || playerVelocity.y !== 0) {
+          initialAngle = Math.atan2(playerVelocity.y, playerVelocity.x);
+        } else {
+          initialAngle = Math.random() * Math.PI * 2;
+        }
+
+        // 여러 발사체일 경우 약간의 스프레드 추가
+        const spread = (i - (weapon.projectileCount - 1) / 2) * 0.1;
+        initialAngle += spread;
+
+        const isEvolution = weapon.weaponId === "w_advancedMissile";
+        const turnSpeed = isEvolution ? 6.0 : 4.0;
+
+        this.projectiles.push({
+          id: projId,
           x: playerPos.x,
           y: playerPos.y,
           vx: Math.cos(initialAngle) * 350 * (weapon.projectileSpeed || 1.0),
@@ -400,7 +421,7 @@ export class WeaponSystem {
             // 타겟 적이 죽었거나 없으면 새로운 적 찾기
             if (!this.targetEnemy || this.targetEnemy.hp <= 0) {
               this.targetEnemy = null;
-              
+
               // 가장 가까운 적 찾기
               if (enemies && enemies.length > 0) {
                 let nearest = null;
@@ -424,21 +445,24 @@ export class WeaponSystem {
               const dx = this.targetEnemy.x - this.x;
               const dy = this.targetEnemy.y - this.y;
               const dist = Math.sqrt(dx * dx + dy * dy);
-              
+
               if (dist > 0) {
                 const targetAngle = Math.atan2(dy, dx);
                 const currentAngle = Math.atan2(this.vy, this.vx);
-                
+
                 // 각도 차이 계산 (-PI ~ PI 범위로 정규화)
                 let angleDiff = targetAngle - currentAngle;
                 if (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
                 if (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-                
+
                 // 회전 속도 제한
                 const maxTurn = this.turnSpeed * dt;
-                const turnAmount = Math.max(-maxTurn, Math.min(maxTurn, angleDiff));
+                const turnAmount = Math.max(
+                  -maxTurn,
+                  Math.min(maxTurn, angleDiff)
+                );
                 const newAngle = currentAngle + turnAmount;
-                
+
                 this.vx = Math.cos(newAngle) * this.speed;
                 this.vy = Math.sin(newAngle) * this.speed;
               }
@@ -459,39 +483,41 @@ export class WeaponSystem {
     }
   }
 
-      // 3. Magic Wand - 가장 가까운 적 자동 조준
-      updateMagicWand(weapon, playerPos, enemies, gameTime, canvas) {
-        if (weapon.cooldownTimer >= weapon.cooldown && enemies.length > 0) {
-          weapon.cooldownTimer = 0;
+  // 3. Magic Wand - 가장 가까운 적 자동 조준
+  updateMagicWand(weapon, playerPos, enemies, gameTime, canvas) {
+    if (weapon.cooldownTimer >= weapon.cooldown && enemies.length > 0) {
+      weapon.cooldownTimer = 0;
 
-          // 가장 가까운 적 찾기
-          let nearestEnemy = null;
-          let nearestDist = Infinity;
-          enemies.forEach((enemy) => {
-            const dx = enemy.x - playerPos.x;
-            const dy = enemy.y - playerPos.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < nearestDist) {
-              nearestDist = dist;
-              nearestEnemy = enemy;
-            }
-          });
+      // 가장 가까운 적 찾기
+      let nearestEnemy = null;
+      let nearestDist = Infinity;
+      enemies.forEach((enemy) => {
+        const dx = enemy.x - playerPos.x;
+        const dy = enemy.y - playerPos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < nearestDist) {
+          nearestDist = dist;
+          nearestEnemy = enemy;
+        }
+      });
 
-          if (nearestEnemy) {
-            const angle = Math.atan2(
-              nearestEnemy.y - playerPos.y,
-              nearestEnemy.x - playerPos.x
-            );
+      if (nearestEnemy) {
+        const angle = Math.atan2(
+          nearestEnemy.y - playerPos.y,
+          nearestEnemy.x - playerPos.x
+        );
 
-            for (let i = 0; i < weapon.projectileCount; i++) {
-              const spread = (i - (weapon.projectileCount - 1) / 2) * 0.1;
-              const projId = Math.random().toString(36).substr(2, 9);
-              this.projectiles.push({
-                id: projId,
+        for (let i = 0; i < weapon.projectileCount; i++) {
+          const spread = (i - (weapon.projectileCount - 1) / 2) * 0.1;
+          const projId = Math.random().toString(36).substr(2, 9);
+          this.projectiles.push({
+            id: projId,
             x: playerPos.x,
             y: playerPos.y,
-            vx: Math.cos(angle + spread) * 300 * (weapon.projectileSpeed || 1.0),
-            vy: Math.sin(angle + spread) * 300 * (weapon.projectileSpeed || 1.0),
+            vx:
+              Math.cos(angle + spread) * 300 * (weapon.projectileSpeed || 1.0),
+            vy:
+              Math.sin(angle + spread) * 300 * (weapon.projectileSpeed || 1.0),
             damage: weapon.damage,
             radius: 4,
             lifetime: 2.0,
@@ -513,16 +539,16 @@ export class WeaponSystem {
     }
   }
 
-      // 4. Axe - 위로 던져 포물선
-      updateAxe(weapon, playerPos, gameTime, canvas) {
-        if (weapon.cooldownTimer >= weapon.cooldown) {
-          weapon.cooldownTimer = 0;
+  // 4. Axe - 위로 던져 포물선
+  updateAxe(weapon, playerPos, gameTime, canvas) {
+    if (weapon.cooldownTimer >= weapon.cooldown) {
+      weapon.cooldownTimer = 0;
 
-          for (let i = 0; i < weapon.projectileCount; i++) {
-            const spread = (i - (weapon.projectileCount - 1) / 2) * 0.2;
-            const projId = Math.random().toString(36).substr(2, 9);
-            this.projectiles.push({
-              id: projId,
+      for (let i = 0; i < weapon.projectileCount; i++) {
+        const spread = (i - (weapon.projectileCount - 1) / 2) * 0.2;
+        const projId = Math.random().toString(36).substr(2, 9);
+        this.projectiles.push({
+          id: projId,
           x: playerPos.x,
           y: playerPos.y,
           vx: Math.cos(Math.PI / 2 + spread) * 200,
@@ -555,68 +581,18 @@ export class WeaponSystem {
     }
   }
 
-      // 5. Cross - 왕복 부메랑
-      updateCross(weapon, playerPos, playerVelocity, gameTime, canvas) {
-        if (weapon.cooldownTimer >= weapon.cooldown) {
-          weapon.cooldownTimer = 0;
-
-          // 플레이어가 마지막으로 이동한 방향 또는 기본 방향
-          let angle = weapon.lastAngle || 0;
-          if (playerVelocity.x !== 0 || playerVelocity.y !== 0) {
-            angle = Math.atan2(playerVelocity.y, playerVelocity.x);
-            weapon.lastAngle = angle;
-          }
-
-          const projId = Math.random().toString(36).substr(2, 9);
-          this.projectiles.push({
-            id: projId,
-        x: playerPos.x,
-        y: playerPos.y,
-        startX: playerPos.x,
-        startY: playerPos.y,
-        angle: angle,
-        speed: 300 * (weapon.projectileSpeed || 1.0),
-        maxDistance: (weapon.range || 1.0) * 150,
-        distance: 0,
-        isReturning: false,
-        damage: weapon.damage,
-        radius: 6,
-        lifetime: 5.0,
-        weaponId: weapon.weaponId,
-        update: function (dt, canvas) {
-          if (!this.isReturning) {
-            this.distance += this.speed * dt;
-            if (this.distance >= this.maxDistance) {
-              this.isReturning = true;
-            }
-          } else {
-            this.distance -= this.speed * dt;
-          }
-
-          this.x = this.startX + Math.cos(this.angle) * this.distance;
-          this.y = this.startY + Math.sin(this.angle) * this.distance;
-          this.lifetime -= dt;
-
-          // 시작점으로 돌아오면 제거
-          this.shouldRemove =
-            this.lifetime <= 0 || (this.isReturning && this.distance <= 0);
-        },
-      });
-    }
-  }
-
   // 7. Santa Water - 랜덤 위치 장판
   updateSantaWater(weapon, playerPos, gameTime, canvas, enemies) {
     if (weapon.cooldownTimer >= weapon.cooldown) {
       weapon.cooldownTimer = 0;
 
       const isEvolution = weapon.weaponId === "w_laBorra";
-      
+
       if (isEvolution) {
         // 라 보라: 가장 가까운 적 위치에 생성
         let targetX = playerPos.x;
         let targetY = playerPos.y;
-        
+
         if (enemies && enemies.length > 0) {
           let nearestEnemy = null;
           let nearestDist = Infinity;
@@ -630,7 +606,7 @@ export class WeaponSystem {
               nearestEnemy = enemy;
             }
           });
-          
+
           if (nearestEnemy) {
             targetX = nearestEnemy.x;
             targetY = nearestEnemy.y;
@@ -667,7 +643,7 @@ export class WeaponSystem {
         });
       }
     }
-    
+
     // 라 보라 장판 이동 업데이트
     if (weapon.weaponId === "w_laBorra" && enemies) {
       this.groundEffects.forEach((effect) => {
@@ -685,12 +661,12 @@ export class WeaponSystem {
               nearestEnemy = enemy;
             }
           });
-          
+
           if (nearestEnemy) {
             const dx = nearestEnemy.x - effect.x;
             const dy = nearestEnemy.y - effect.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
-            
+
             if (dist > 0) {
               const moveX = (dx / dist) * effect.speed * (1 / 60);
               const moveY = (dy / dist) * effect.speed * (1 / 60);
@@ -715,14 +691,15 @@ export class WeaponSystem {
 
       const isEvolution = weapon.weaponId === "w_thunderLoop";
       const boltCount = weapon.boltCount || 1;
-      const chainCount = isEvolution ? (weapon.chainCount || 3) : 0;
+      const chainCount = isEvolution ? weapon.chainCount || 3 : 0;
 
       for (let i = 0; i < boltCount; i++) {
         let x, y;
-        
+
         if (isEvolution && enemies && enemies.length > 0) {
           // 천둥 고리: 적 위치에 낙뢰
-          const randomEnemy = enemies[Math.floor(Math.random() * enemies.length)];
+          const randomEnemy =
+            enemies[Math.floor(Math.random() * enemies.length)];
           if (randomEnemy && randomEnemy.hp > 0) {
             x = randomEnemy.x;
             y = randomEnemy.y;
@@ -746,12 +723,12 @@ export class WeaponSystem {
           chainIndex: 0,
           chainTargets: [],
         });
-        
+
         // 연쇄 번개 생성
         if (isEvolution && chainCount > 0 && enemies && enemies.length > 0) {
           let lastX = x;
           let lastY = y;
-          
+
           for (let chain = 0; chain < chainCount; chain++) {
             // 다음 타겟 찾기
             let nextEnemy = null;
@@ -761,16 +738,17 @@ export class WeaponSystem {
               const dx = enemy.x - lastX;
               const dy = enemy.y - lastY;
               const dist = Math.sqrt(dx * dx + dy * dy);
-              if (dist < nextDist && dist > 30) { // 너무 가까운 적 제외
+              if (dist < nextDist && dist > 30) {
+                // 너무 가까운 적 제외
                 nextDist = dist;
                 nextEnemy = enemy;
               }
             });
-            
+
             if (nextEnemy) {
               lastX = nextEnemy.x;
               lastY = nextEnemy.y;
-              
+
               this.lightningStrikes.push({
                 x: lastX,
                 y: lastY,
@@ -789,38 +767,38 @@ export class WeaponSystem {
     }
   }
 
-      // 10. Fire Wand - 폭발형 투사체
-      updateFireWand(weapon, playerPos, enemies, gameTime, canvas) {
-        if (weapon.cooldownTimer >= weapon.cooldown) {
-          weapon.cooldownTimer = 0;
+  // 10. Fire Wand - 폭발형 투사체
+  updateFireWand(weapon, playerPos, enemies, gameTime, canvas) {
+    if (weapon.cooldownTimer >= weapon.cooldown) {
+      weapon.cooldownTimer = 0;
 
-          // 가장 가까운 적 방향
-          let angle = 0;
-          if (enemies.length > 0) {
-            let nearestEnemy = null;
-            let nearestDist = Infinity;
-            enemies.forEach((enemy) => {
-              const dx = enemy.x - playerPos.x;
-              const dy = enemy.y - playerPos.y;
-              const dist = Math.sqrt(dx * dx + dy * dy);
-              if (dist < nearestDist) {
-                nearestDist = dist;
-                nearestEnemy = enemy;
-              }
-            });
-            if (nearestEnemy) {
-              angle = Math.atan2(
-                nearestEnemy.y - playerPos.y,
-                nearestEnemy.x - playerPos.x
-              );
-            }
+      // 가장 가까운 적 방향
+      let angle = 0;
+      if (enemies.length > 0) {
+        let nearestEnemy = null;
+        let nearestDist = Infinity;
+        enemies.forEach((enemy) => {
+          const dx = enemy.x - playerPos.x;
+          const dy = enemy.y - playerPos.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < nearestDist) {
+            nearestDist = dist;
+            nearestEnemy = enemy;
           }
+        });
+        if (nearestEnemy) {
+          angle = Math.atan2(
+            nearestEnemy.y - playerPos.y,
+            nearestEnemy.x - playerPos.x
+          );
+        }
+      }
 
-          for (let i = 0; i < weapon.projectileCount; i++) {
-            const spread = (i - (weapon.projectileCount - 1) / 2) * 0.15;
-            const projId = Math.random().toString(36).substr(2, 9);
-            this.projectiles.push({
-              id: projId,
+      for (let i = 0; i < weapon.projectileCount; i++) {
+        const spread = (i - (weapon.projectileCount - 1) / 2) * 0.15;
+        const projId = Math.random().toString(36).substr(2, 9);
+        this.projectiles.push({
+          id: projId,
           x: playerPos.x,
           y: playerPos.y,
           vx: Math.cos(angle + spread) * 250,
@@ -835,7 +813,8 @@ export class WeaponSystem {
           weaponId: weapon.weaponId,
           update: function (dt, canvas) {
             if (!this.hasExploded) {
-              this.distance += Math.sqrt(this.vx * this.vx + this.vy * this.vy) * dt;
+              this.distance +=
+                Math.sqrt(this.vx * this.vx + this.vy * this.vy) * dt;
               this.x += this.vx * dt;
               this.y += this.vy * dt;
 
@@ -854,17 +833,17 @@ export class WeaponSystem {
     }
   }
 
-      // 11. Runetracer - 바운스 투사체
-      updateRunetracer(weapon, playerPos, gameTime, canvas) {
-        if (weapon.cooldownTimer >= weapon.cooldown) {
-          weapon.cooldownTimer = 0;
+  // 11. Runetracer - 바운스 투사체
+  updateRunetracer(weapon, playerPos, gameTime, canvas) {
+    if (weapon.cooldownTimer >= weapon.cooldown) {
+      weapon.cooldownTimer = 0;
 
-          const isEvolution = weapon.weaponId === "w_noFuture";
-          const angle = Math.random() * Math.PI * 2;
-          const projId = Math.random().toString(36).substr(2, 9);
+      const isEvolution = weapon.weaponId === "w_noFuture";
+      const angle = Math.random() * Math.PI * 2;
+      const projId = Math.random().toString(36).substr(2, 9);
 
-          this.projectiles.push({
-            id: projId,
+      this.projectiles.push({
+        id: projId,
         x: playerPos.x,
         y: playerPos.y,
         vx: Math.cos(angle) * 200,
@@ -920,7 +899,6 @@ export class WeaponSystem {
     }
   }
 
-
   // 무기 렌더링
   renderWeapons(ctx, playerPos) {
     this.activeWeapons.forEach((weapon) => {
@@ -939,8 +917,6 @@ export class WeaponSystem {
         case "w_magicWand":
         case "w_holyWand":
         case "w_axe":
-        case "w_cross":
-        case "w_heavenSword":
         case "w_fireWand":
         case "w_hellfire":
         case "w_runetracer":
@@ -1036,21 +1012,22 @@ export class WeaponSystem {
       ctx.stroke();
 
       // 피 파티클 효과
-      const endAngle = angle + swingAngle * (1 - progress) * weapon.swingDirection;
+      const endAngle =
+        angle + swingAngle * (1 - progress) * weapon.swingDirection;
       const endX = playerPos.x + Math.cos(endAngle) * range;
       const endY = playerPos.y + Math.sin(endAngle) * range;
-      
+
       // 큰 피 방울
       ctx.fillStyle = "#8b0000";
       ctx.beginPath();
       ctx.arc(endX, endY, 12, 0, Math.PI * 2);
       ctx.fill();
-      
+
       ctx.fillStyle = "#ff0000";
       ctx.beginPath();
       ctx.arc(endX, endY, 8, 0, Math.PI * 2);
       ctx.fill();
-      
+
       // 작은 피 방울들
       for (let i = 0; i < 5; i++) {
         const dropAngle = endAngle + (Math.random() - 0.5) * 0.5;
@@ -1088,15 +1065,16 @@ export class WeaponSystem {
       );
       ctx.stroke();
 
-      const endAngle = angle + swingAngle * (1 - progress) * weapon.swingDirection;
+      const endAngle =
+        angle + swingAngle * (1 - progress) * weapon.swingDirection;
       const endX = playerPos.x + Math.cos(endAngle) * range;
       const endY = playerPos.y + Math.sin(endAngle) * range;
-      
+
       ctx.fillStyle = "#ff0000";
       ctx.beginPath();
       ctx.arc(endX, endY, 8, 0, Math.PI * 2);
       ctx.fill();
-      
+
       ctx.fillStyle = "#ffffff";
       ctx.beginPath();
       ctx.arc(endX, endY, 4, 0, Math.PI * 2);
@@ -1107,7 +1085,7 @@ export class WeaponSystem {
   // 회전형 무기 렌더링 (King Bible)
   renderOrbitalWeapon(ctx, weapon, playerPos) {
     const isEvolution = weapon.weaponId === "w_unchainedSpirits";
-    const count = isEvolution ? (weapon.count || 5) : (weapon.count || 1);
+    const count = isEvolution ? weapon.count || 5 : weapon.count || 1;
     const range = (weapon.range || 1.0) * 50;
     const angleStep = (Math.PI * 2) / count;
 
@@ -1123,13 +1101,13 @@ export class WeaponSystem {
         ctx.beginPath();
         ctx.arc(weaponX, weaponY, 12, 0, Math.PI * 2);
         ctx.fill();
-        
+
         // 중심
         ctx.fillStyle = "#ffffff";
         ctx.beginPath();
         ctx.arc(weaponX, weaponY, 8, 0, Math.PI * 2);
         ctx.fill();
-        
+
         // 내부 빛
         ctx.fillStyle = "#ffff00";
         ctx.beginPath();
@@ -1148,7 +1126,7 @@ export class WeaponSystem {
   renderAuraWeapon(ctx, weapon, playerPos) {
     const isEvolution = weapon.weaponId === "w_soulEater";
     const radius = (weapon.radius || 1.0) * 50;
-    
+
     if (isEvolution) {
       // 영혼 포식자: 어두운 보라색 오라 + 영혼 파티클
       // 외곽 오라
@@ -1157,22 +1135,24 @@ export class WeaponSystem {
       ctx.beginPath();
       ctx.arc(playerPos.x, playerPos.y, radius, 0, Math.PI * 2);
       ctx.stroke();
-      
+
       // 내부 오라
       ctx.strokeStyle = "rgba(138, 43, 226, 0.4)";
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.arc(playerPos.x, playerPos.y, radius * 0.9, 0, Math.PI * 2);
       ctx.stroke();
-      
+
       // 영혼 파티클 (간단한 효과)
       const time = Date.now() / 1000;
       for (let i = 0; i < 8; i++) {
-        const angle = (Math.PI * 2 / 8) * i + time;
+        const angle = ((Math.PI * 2) / 8) * i + time;
         const dist = radius * 0.7 + Math.sin(time * 2 + i) * 10;
         const x = playerPos.x + Math.cos(angle) * dist;
         const y = playerPos.y + Math.sin(angle) * dist;
-        ctx.fillStyle = `rgba(138, 43, 226, ${0.5 + Math.sin(time * 3 + i) * 0.3})`;
+        ctx.fillStyle = `rgba(138, 43, 226, ${
+          0.5 + Math.sin(time * 3 + i) * 0.3
+        })`;
         ctx.beginPath();
         ctx.arc(x, y, 3, 0, Math.PI * 2);
         ctx.fill();
@@ -1189,14 +1169,17 @@ export class WeaponSystem {
   // 투사체 렌더링
   renderProjectile(ctx, proj) {
     // 유도탄: 빨간색 미사일 효과
-    if (proj.weaponId === "w_homingMissile" || proj.weaponId === "w_advancedMissile") {
+    if (
+      proj.weaponId === "w_homingMissile" ||
+      proj.weaponId === "w_advancedMissile"
+    ) {
       const isEvolution = proj.weaponId === "w_advancedMissile";
       // 미사일 몸체
       ctx.fillStyle = isEvolution ? "#ff4444" : "#ff6666";
       ctx.beginPath();
       ctx.arc(proj.x, proj.y, proj.radius * 1.2, 0, Math.PI * 2);
       ctx.fill();
-      
+
       // 미사일 꼬리
       const angle = Math.atan2(proj.vy, proj.vx);
       const tailLength = 10;
@@ -1209,7 +1192,7 @@ export class WeaponSystem {
         proj.y - Math.sin(angle) * tailLength
       );
       ctx.stroke();
-      
+
       // 진화 버전: 더 밝은 효과
       if (isEvolution) {
         ctx.fillStyle = "#ffffff";
@@ -1245,26 +1228,6 @@ export class WeaponSystem {
       ctx.beginPath();
       ctx.arc(proj.x, proj.y, proj.radius * 1.5, 0, Math.PI * 2);
       ctx.stroke();
-    }
-    // 천상의 검: 황금 십자가 + 회전
-    else if (proj.weaponId === "w_heavenSword") {
-      const rotation = (Date.now() / 50) % (Math.PI * 2);
-      ctx.save();
-      ctx.translate(proj.x, proj.y);
-      ctx.rotate(rotation);
-      ctx.fillStyle = "#ffd700";
-      ctx.beginPath();
-      ctx.arc(0, 0, proj.radius * 1.2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "#ffff00";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(-8, 0);
-      ctx.lineTo(8, 0);
-      ctx.moveTo(0, -8);
-      ctx.lineTo(0, 8);
-      ctx.stroke();
-      ctx.restore();
     }
     // 지옥불: 더 큰 빨간 투사체
     else if (proj.weaponId === "w_hellfire") {
@@ -1303,37 +1266,38 @@ export class WeaponSystem {
       ctx.fill();
     }
 
-    // Cross는 회전 효과
-    if (proj.weaponId === "w_cross") {
-      ctx.strokeStyle = "#ffd700";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(proj.x - 5, proj.y);
-      ctx.lineTo(proj.x + 5, proj.y);
-      ctx.moveTo(proj.x, proj.y - 5);
-      ctx.lineTo(proj.x, proj.y + 5);
-      ctx.stroke();
-    }
-
     // Fire Wand/Hellfire 폭발 효과
-    if ((proj.weaponId === "w_fireWand" || proj.weaponId === "w_hellfire") && proj.hasExploded) {
+    if (
+      (proj.weaponId === "w_fireWand" || proj.weaponId === "w_hellfire") &&
+      proj.hasExploded
+    ) {
       ctx.fillStyle = "rgba(255, 100, 0, 0.5)";
       ctx.beginPath();
       ctx.arc(proj.x, proj.y, proj.explosionRadius, 0, Math.PI * 2);
       ctx.fill();
     }
-    
+
     // 미래 없음: 바운스 시 폭발 효과
-    if (proj.weaponId === "w_noFuture" && proj.hasExploded && proj.explosionLifetime !== undefined) {
+    if (
+      proj.weaponId === "w_noFuture" &&
+      proj.hasExploded &&
+      proj.explosionLifetime !== undefined
+    ) {
       const alpha = proj.explosionLifetime / 0.3;
       ctx.fillStyle = `rgba(139, 0, 255, ${alpha * 0.6})`;
       ctx.beginPath();
       ctx.arc(proj.x, proj.y, proj.explosionRadius || 40, 0, Math.PI * 2);
       ctx.fill();
-      
+
       ctx.fillStyle = `rgba(255, 0, 255, ${alpha * 0.4})`;
       ctx.beginPath();
-      ctx.arc(proj.x, proj.y, (proj.explosionRadius || 40) * 0.7, 0, Math.PI * 2);
+      ctx.arc(
+        proj.x,
+        proj.y,
+        (proj.explosionRadius || 40) * 0.7,
+        0,
+        Math.PI * 2
+      );
       ctx.fill();
     }
   }
@@ -1341,7 +1305,7 @@ export class WeaponSystem {
   // 장판 렌더링 (Santa Water)
   renderGroundEffect(ctx, effect) {
     const isEvolution = effect.weaponId === "w_laBorra";
-    
+
     if (isEvolution) {
       // 라 보라: 더 큰 범위 + 이동 효과
       // 외곽 원
@@ -1349,25 +1313,31 @@ export class WeaponSystem {
       ctx.beginPath();
       ctx.arc(effect.x, effect.y, effect.radius * 1.2, 0, Math.PI * 2);
       ctx.fill();
-      
+
       // 중간 원
       ctx.fillStyle = "rgba(0, 150, 255, 0.5)";
       ctx.beginPath();
       ctx.arc(effect.x, effect.y, effect.radius, 0, Math.PI * 2);
       ctx.fill();
-      
+
       // 내부 원
       ctx.fillStyle = "rgba(100, 200, 255, 0.6)";
       ctx.beginPath();
       ctx.arc(effect.x, effect.y, effect.radius * 0.7, 0, Math.PI * 2);
       ctx.fill();
-      
+
       // 파도 효과
       const time = Date.now() / 500;
       ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 + Math.sin(time) * 0.2})`;
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(effect.x, effect.y, effect.radius * 0.9 + Math.sin(time) * 5, 0, Math.PI * 2);
+      ctx.arc(
+        effect.x,
+        effect.y,
+        effect.radius * 0.9 + Math.sin(time) * 5,
+        0,
+        Math.PI * 2
+      );
       ctx.stroke();
     } else {
       ctx.fillStyle = "rgba(0, 150, 255, 0.4)";
@@ -1380,7 +1350,7 @@ export class WeaponSystem {
   // 낙뢰 렌더링
   renderLightning(ctx, strike) {
     const isEvolution = strike.weaponId === "w_thunderLoop";
-    
+
     if (isEvolution) {
       // 천둥 고리: 더 강한 번개 + 연쇄 효과
       // 메인 번개 (더 두껍고 밝음)
@@ -1390,25 +1360,25 @@ export class WeaponSystem {
       ctx.moveTo(strike.x, 0);
       ctx.lineTo(strike.x, strike.y);
       ctx.stroke();
-      
+
       ctx.strokeStyle = "#ffff00";
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(strike.x, 0);
       ctx.lineTo(strike.x, strike.y);
       ctx.stroke();
-      
+
       // 폭발 효과 (더 큰 범위)
       ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
       ctx.beginPath();
       ctx.arc(strike.x, strike.y, strike.radius * 1.3, 0, Math.PI * 2);
       ctx.fill();
-      
+
       ctx.fillStyle = "rgba(255, 255, 0, 0.7)";
       ctx.beginPath();
       ctx.arc(strike.x, strike.y, strike.radius, 0, Math.PI * 2);
       ctx.fill();
-      
+
       // 연쇄 번개 효과 (작은 번개들)
       for (let i = 0; i < 3; i++) {
         const offsetX = (Math.random() - 0.5) * strike.radius * 2;
@@ -1436,7 +1406,14 @@ export class WeaponSystem {
   }
 
   // 무기 충돌 체크 (적과의 충돌)
-  checkWeaponCollisions(weapon, playerPos, playerVelocity, enemies, gameTime, canvas) {
+  checkWeaponCollisions(
+    weapon,
+    playerPos,
+    playerVelocity,
+    enemies,
+    gameTime,
+    canvas
+  ) {
     const hits = [];
     // 기본 무기 또는 진화 무기 확인
     let weaponData = WEAPONS_DB[weapon.weaponId];
@@ -1457,9 +1434,12 @@ export class WeaponSystem {
         // 좌우 스윙 충돌
         if (weapon.isSwinging) {
           const range = (weapon.range || 1.0) * 100; // 렌더링 범위와 일치
-          const angle = weapon.swingDirection === 1 ? Math.PI / 4 : -Math.PI / 4;
+          const angle =
+            weapon.swingDirection === 1 ? Math.PI / 4 : -Math.PI / 4;
           const swingAngle = Math.PI / 2.5; // 렌더링과 일치
-          const progress = weapon.swingProgress ? weapon.swingProgress / 0.3 : 1;
+          const progress = weapon.swingProgress
+            ? weapon.swingProgress / 0.3
+            : 1;
 
           enemies.forEach((enemy, index) => {
             const dx = enemy.x - playerPos.x;
@@ -1566,7 +1546,6 @@ export class WeaponSystem {
           }
         });
         break;
-
     }
 
     // 투사체 충돌 체크
@@ -1574,18 +1553,27 @@ export class WeaponSystem {
       if (proj.weaponId !== weapon.weaponId) return;
 
       // 미래 없음: 폭발 범위 데미지
-      if (proj.weaponId === "w_noFuture" && proj.hasExploded && proj.explosionLifetime !== undefined) {
+      if (
+        proj.weaponId === "w_noFuture" &&
+        proj.hasExploded &&
+        proj.explosionLifetime !== undefined
+      ) {
         const explosionRadius = proj.explosionRadius || 40;
         enemies.forEach((enemy, index) => {
           const dx = proj.x - enemy.x;
           const dy = proj.y - enemy.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-          
+
           if (distance < explosionRadius + enemy.radius) {
-            const lastHitTime = weapon.enemyHitTimes.get(`${index}_${proj.id || 0}_explosion`) || 0;
+            const lastHitTime =
+              weapon.enemyHitTimes.get(`${index}_${proj.id || 0}_explosion`) ||
+              0;
             if (gameTime - lastHitTime >= 0.1) {
               hits.push({ enemyIndex: index, damage: proj.damage * 1.5 }); // 폭발 데미지 증가
-              weapon.enemyHitTimes.set(`${index}_${proj.id || 0}_explosion`, gameTime);
+              weapon.enemyHitTimes.set(
+                `${index}_${proj.id || 0}_explosion`,
+                gameTime
+              );
             }
           }
         });
@@ -1598,15 +1586,23 @@ export class WeaponSystem {
         const distance = Math.sqrt(dx * dx + dy * dy);
 
         if (distance < proj.radius + enemy.radius) {
-          const lastHitTime = weapon.enemyHitTimes.get(`${index}_${proj.id || 0}`) || 0;
+          const lastHitTime =
+            weapon.enemyHitTimes.get(`${index}_${proj.id || 0}`) || 0;
           if (gameTime - lastHitTime >= 0.1) {
             hits.push({ enemyIndex: index, damage: proj.damage });
 
             // Fire Wand/Hellfire는 폭발 후 제거
-            if ((proj.weaponId === "w_fireWand" || proj.weaponId === "w_hellfire") && !proj.hasExploded) {
+            if (
+              (proj.weaponId === "w_fireWand" ||
+                proj.weaponId === "w_hellfire") &&
+              !proj.hasExploded
+            ) {
               proj.hasExploded = true;
               proj.lifetime = 0.3;
-            } else if (proj.weaponId !== "w_runetracer" && proj.weaponId !== "w_noFuture") {
+            } else if (
+              proj.weaponId !== "w_runetracer" &&
+              proj.weaponId !== "w_noFuture"
+            ) {
               // Runetracer/NoFuture는 관통, 나머지는 제거
               proj.shouldRemove = true;
             }

@@ -311,10 +311,10 @@ class Game {
     let moveX = 0;
     let moveY = 0;
 
-    if (this.keys["w"] || this.keys["arrowup"]) moveY -= 1;
-    if (this.keys["s"] || this.keys["arrowdown"]) moveY += 1;
-    if (this.keys["a"] || this.keys["arrowleft"]) moveX -= 1;
-    if (this.keys["d"] || this.keys["arrowright"]) moveX += 1;
+    if (this.keys["w"]) moveY -= 1;
+    if (this.keys["s"]) moveY += 1;
+    if (this.keys["a"]) moveX -= 1;
+    if (this.keys["d"]) moveX += 1;
 
     // 대각선 이동 정규화
     if (moveX !== 0 && moveY !== 0) {
