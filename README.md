@@ -1,18 +1,6 @@
-# Electron 게임 개발 가이드
+# 뱀파이어 서바이벌 스타일 게임
 
-## 프로젝트 구조
-
-```
-game/
-├── main.js          # Electron 메인 프로세스 (앱 창 관리)
-├── preload.js       # 보안 브릿지 스크립트
-├── index.html       # 게임 UI
-├── game.js          # 게임 로직
-├── package.json     # 프로젝트 설정
-└── README.md        # 이 파일
-```
-
-## 설치 및 실행
+## 실행 방법
 
 ### 1. 의존성 설치
 ```bash
@@ -24,157 +12,47 @@ npm install
 npm start
 ```
 
-## Electron 게임 개발 기초
+## 게임 방법
 
-### 1. Electron 아키텍처
+### 기본 조작
+- **WASD** 또는 **방향키**: 플레이어 이동
+- 적을 처치하고 경험치를 모으세요
 
-Electron은 두 가지 프로세스로 구성됩니다:
+### 게임 시스템
 
-- **메인 프로세스 (main.js)**: 
-  - 앱의 생명주기 관리
-  - 브라우저 윈도우 생성 및 관리
-  - Node.js API 접근 가능
+#### 무기 시스템
+- 게임 시작 시 무기 1개를 선택합니다
+- 최대 3개의 무기를 보유할 수 있습니다
+- 레벨업 시 무기를 추가하거나 기존 무기를 강화할 수 있습니다
+- 무기 레벨 5 + 특정 패시브 레벨 3+ → 진화 가능
 
-- **렌더러 프로세스 (game.js, HTML)**: 
-  - 실제 게임이 실행되는 곳
-  - 웹 기술(HTML, CSS, JavaScript) 사용
-  - 보안상 Node.js 직접 접근 불가 (preload.js 통해 노출)
+#### 패시브 시스템
+- 최대 3개의 패시브를 보유할 수 있습니다
+- 패시브는 플레이어 스탯을 영구적으로 강화합니다
+- 레벨업 시 패시브를 추가하거나 기존 패시브를 강화할 수 있습니다
 
-### 2. 게임 루프 기본 구조
+#### 레벨업 시스템
+- 적을 처치하면 경험치를 획득합니다
+- 경험치를 모으면 레벨업하며 무기/패시브 선택지가 나타납니다
+- 3개의 선택지 중 1개를 선택할 수 있습니다
 
-```javascript
-class Game {
-    update() {
-        // 게임 상태 업데이트
-        // - 플레이어 위치
-        // - 충돌 감지
-        // - 점수 계산 등
-    }
-    
-    render() {
-        // 화면 그리기
-        // - Canvas에 그래픽 렌더링
-    }
-    
-    gameLoop() {
-        this.update();
-        this.render();
-        requestAnimationFrame(() => this.gameLoop());
-    }
-}
-```
+#### 진화 시스템
+- 특정 무기와 패시브 조합으로 무기를 진화시킬 수 있습니다
+- 진화 조건을 만족하면 상자(Chest)를 열 때 진화할 수 있습니다
+- 진화 무기는 더 강력하고 화려한 효과를 가집니다
 
-### 3. Canvas 게임 개발 핵심
+#### 엘리트 몬스터
+- 30초마다 강한 엘리트 몬스터가 출현합니다
+- 엘리트는 보라색으로 표시되며 더 많은 체력을 가집니다
+- 처치 시 더 많은 경험치와 높은 확률로 상자를 획득할 수 있습니다
 
-#### Canvas 초기화
-```javascript
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-canvas.width = 800;
-canvas.height = 600;
-```
+#### 상자(Chest)
+- 적 처치 시 1% 확률로 상자가 드롭됩니다
+- 엘리트 처치 시 30% 확률로 상자가 드롭됩니다
+- 상자를 열면 무기/패시브 선택지가 나타나거나 진화할 수 있습니다
 
-#### 기본 그리기
-```javascript
-// 사각형
-ctx.fillStyle = '#ff0000';
-ctx.fillRect(x, y, width, height);
-
-// 원
-ctx.beginPath();
-ctx.arc(x, y, radius, 0, Math.PI * 2);
-ctx.fill();
-
-// 텍스트
-ctx.fillStyle = '#ffffff';
-ctx.font = '20px Arial';
-ctx.fillText('Hello', x, y);
-```
-
-#### 애니메이션
-```javascript
-// requestAnimationFrame 사용 (60fps 목표)
-function animate() {
-    // 화면 지우기
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // 그리기
-    draw();
-    
-    // 다음 프레임
-    requestAnimationFrame(animate);
-}
-```
-
-### 4. 입력 처리
-
-```javascript
-// 키보드 입력
-const keys = {};
-
-window.addEventListener('keydown', (e) => {
-    keys[e.key] = true;
-});
-
-window.addEventListener('keyup', (e) => {
-    keys[e.key] = false;
-});
-
-// 게임 루프에서 사용
-if (keys['ArrowLeft']) {
-    player.x -= speed;
-}
-```
-
-### 5. 게임 개발 단계
-
-1. **기본 구조 설정** ✅ (완료)
-2. **게임 객체 클래스 생성** (플레이어, 적, 아이템 등)
-3. **충돌 감지 시스템** 구현
-4. **게임 상태 관리** (시작, 일시정지, 게임오버)
-5. **사운드 효과** 추가
-6. **점수 시스템** 및 **레벨 시스템**
-7. **파일 저장** (로컬 스토리지 또는 파일 시스템)
-
-### 6. 성능 최적화 팁
-
-- **이미지 스프라이트** 사용 (여러 이미지를 하나로 합치기)
-- **객체 풀링** (자주 생성/삭제되는 객체 재사용)
-- **화면 밖 객체 렌더링 생략**
-- **requestAnimationFrame** 사용 (setInterval 대신)
-
-### 7. 다음 단계 예제
-
-현재 프로젝트에는 간단한 점프 게임 예제가 포함되어 있습니다. 이를 확장하여:
-
-- 적 캐릭터 추가
-- 아이템 수집 시스템
-- 레벨 진행 시스템
-- 파티클 효과
-- 사운드 추가
-
-등을 구현할 수 있습니다.
-
-## 유용한 리소스
-
-- [Electron 공식 문서](https://www.electronjs.org/docs)
-- [Canvas API 문서](https://developer.mozilla.org/ko/docs/Web/API/Canvas_API)
-- [게임 개발 패턴](https://gameprogrammingpatterns.com/)
-
-## 문제 해결
-
-### 게임이 느려지는 경우
-- Canvas 크기 확인
-- 불필요한 렌더링 제거
-- 객체 수 최적화
-
-### 입력이 반응하지 않는 경우
-- 이벤트 리스너가 제대로 등록되었는지 확인
-- 키 코드 확인 (대소문자 구분)
-
-### Electron 창이 열리지 않는 경우
-- `npm install` 실행 확인
-- Node.js 버전 확인 (v14 이상 권장)
-
-# simple-game-electron
-# simple-game-electron
+### 팁
+- 적에게 닿으면 피해를 받으니 주의하세요
+- 경험치 오브를 모아 레벨업하세요
+- 무기와 패시브 조합을 신중하게 선택하세요
+- 진화 조건을 확인하고 목표를 설정하세요
