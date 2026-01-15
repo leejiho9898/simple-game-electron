@@ -269,13 +269,22 @@ export class WeaponSystem {
     });
   }
 
-  // 1. Whip - 좌우 동시 스윙
+  // 1. Whip - 레벨에 따라 좌우 번갈아 또는 동시 스윙
   updateWhip(weapon, playerPos, gameTime) {
     if (weapon.cooldownTimer >= weapon.cooldown) {
       weapon.cooldownTimer = 0;
 
-      // 항상 좌우 동시 스윙
-      weapon.swingDirections = [1, -1];
+      // 레벨 3 이상: 양쪽 동시, 레벨 1-2: 좌우 번갈아
+      if (weapon.level >= 3) {
+        weapon.swingDirections = [1, -1]; // 양쪽 동시
+      } else {
+        // 좌우 번갈아
+        if (!weapon.swingDirection) {
+          weapon.swingDirection = 1; // 초기값: 우측
+        }
+        weapon.swingDirection *= -1; // 방향 전환
+        weapon.swingDirections = [weapon.swingDirection];
+      }
 
       weapon.lastSwingTime = gameTime;
       weapon.isSwinging = true;
@@ -980,8 +989,8 @@ export class WeaponSystem {
 
     // 각 방향에 대해 렌더링 (좌우 각각 180도 커버)
     swingDirections.forEach((direction) => {
-      // 우측: 0 ~ Math.PI (오른쪽 반원), 좌측: -Math.PI ~ 0 (왼쪽 반원)
-      const centerAngle = direction === 1 ? Math.PI / 2 : -Math.PI / 2;
+      // 좌측: 0 (왼쪽 반원), 우측: Math.PI (오른쪽 반원)
+      const centerAngle = direction === 1 ? Math.PI : 0;
       const ellipseRadiusX = range * 0.8;
       const ellipseRadiusY = range * 0.35; // 납작한 타원
       const centerOffset = range * 0.4;
@@ -1086,9 +1095,9 @@ export class WeaponSystem {
           centerY,
           ellipseRadiusX * 0.9,
           ellipseRadiusY * 0.8 * (1 - progress * 0.3),
-          angle,
-          -swingAngle,
-          swingAngle
+          centerAngle,
+          -Math.PI / 2,
+          Math.PI / 2
         );
         ctx.stroke();
 
@@ -1497,15 +1506,18 @@ export class WeaponSystem {
 
             // 각 방향에 대해 충돌 체크 (좌우 각각 180도 커버)
             for (const direction of swingDirections) {
-              // 우측: 0 ~ Math.PI (오른쪽 반원), 좌측: -Math.PI ~ 0 (왼쪽 반원)
+              // 좌측: 왼쪽 반원 (x < 0), 우측: 오른쪽 반원 (x > 0)
               let angleInRange = false;
               if (direction === 1) {
-                // 우측: 0 ~ Math.PI (오른쪽 반원, x >= 0)
-                angleInRange = enemyAngle >= 0 && enemyAngle <= Math.PI;
+                // 우측: -Math.PI/2 ~ Math.PI/2 (오른쪽 반원, x > 0)
+                angleInRange =
+                  enemyAngle >= -Math.PI / 2 && enemyAngle <= Math.PI / 2;
               } else if (direction === -1) {
-                // 좌측: -Math.PI ~ 0 (왼쪽 반원, x < 0)
+                // 좌측: Math.PI/2 ~ -Math.PI/2 (왼쪽 반원, x < 0)
                 // Math.atan2는 -Math.PI ~ Math.PI 범위를 반환
-                angleInRange = enemyAngle >= -Math.PI && enemyAngle <= 0;
+                angleInRange =
+                  (enemyAngle >= Math.PI / 2 && enemyAngle <= Math.PI) ||
+                  (enemyAngle >= -Math.PI && enemyAngle <= -Math.PI / 2);
               }
 
               if (distance < range + enemy.radius && angleInRange) {
