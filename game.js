@@ -455,18 +455,7 @@ class Game {
       const dy = this.playerPos.y - orb.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      // 플레이어에게 끌림 (pickupRadius 적용)
-      const pickupRadius = this.state.player.pickupRadius * 30; // 픽셀 단위
-      if (distance < pickupRadius) {
-        orb.speed += 0.2;
-      }
-
-      if (distance > 0) {
-        orb.x += (dx / distance) * orb.speed;
-        orb.y += (dy / distance) * orb.speed;
-      }
-
-      // 수집 체크
+      // 수집 체크 (플레이어가 직접 접촉해야만 획득)
       if (distance < this.playerPos.radius + orb.radius) {
         this.gainExp(orb.value);
         orb.collected = true;

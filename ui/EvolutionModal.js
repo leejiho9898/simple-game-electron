@@ -7,6 +7,7 @@ export class EvolutionModal {
     this.evolutionSystem = new EvolutionSystem();
     this.onEvolutionConfirmed = null; // 콜백 함수
     this.currentEvolution = null;
+    this.isConfirming = false; // 중복 확인 방지
   }
 
   // 모달 초기화
@@ -32,6 +33,14 @@ export class EvolutionModal {
         this.hide();
       });
     }
+
+    // 콘텐츠 자체를 클릭해도 확인되도록 처리 (사용자 경험 개선)
+    const content = this.modalElement.querySelector(".evolution-content");
+    if (content) {
+      content.addEventListener("click", () => {
+        this.confirmEvolution();
+      });
+    }
   }
 
   // 모달 표시
@@ -43,6 +52,7 @@ export class EvolutionModal {
     if (!this.modalElement) return;
 
     this.currentEvolution = evolutionInfo;
+    this.isConfirming = false;
 
     // 진화 정보 표시
     const title = this.modalElement.querySelector(".evolution-title");
@@ -76,7 +86,9 @@ export class EvolutionModal {
 
   // 진화 확인
   confirmEvolution() {
+    if (this.isConfirming) return;
     if (this.onEvolutionConfirmed && this.currentEvolution) {
+      this.isConfirming = true;
       this.onEvolutionConfirmed(this.currentEvolution);
     }
     this.hide();

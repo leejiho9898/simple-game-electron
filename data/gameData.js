@@ -9,10 +9,10 @@ export const WEAPONS_DB = {
     tags: ["melee"],
     levels: [
       { damage: 10, cooldown: 1.2, range: 1.0 },
-      { damage: 13, cooldown: 1.2, range: 1.0 },
-      { damage: 16, cooldown: 1.2, range: 1.1 },
-      { damage: 20, cooldown: 1.2, range: 1.1 },
-      { damage: 25, cooldown: 1.2, range: 1.2 },
+      { damage: 13, cooldown: 1.0, range: 1.1 },
+      { damage: 16, cooldown: 1.0, range: 1.2 },
+      { damage: 20, cooldown: 0.9, range: 1.3 },
+      { damage: 25, cooldown: 0.5, range: 1.4 },
     ],
     evolution: {
       weaponId: "w_bloodyTear",
@@ -30,7 +30,7 @@ export const WEAPONS_DB = {
       { damage: 10, projectileCount: 1, cooldown: 1.4 },
       { damage: 10, projectileCount: 2, cooldown: 1.3 },
       { damage: 13, projectileCount: 2, cooldown: 1.2 },
-      { damage: 13, projectileCount: 3, cooldown: 1.1 },
+      { damage: 14, projectileCount: 3, cooldown: 0.8 },
     ],
     evolution: {
       weaponId: "w_thousandEdge",
@@ -46,9 +46,9 @@ export const WEAPONS_DB = {
     levels: [
       { damage: 10, projectileCount: 1, cooldown: 2.5 },
       { damage: 12, projectileCount: 1, cooldown: 2.3 },
-      { damage: 12, projectileCount: 1, cooldown: 2.1 },
-      { damage: 15, projectileCount: 1, cooldown: 1.9 },
-      { damage: 15, projectileCount: 2, cooldown: 1.7 },
+      { damage: 12, projectileCount: 2, cooldown: 2.1 },
+      { damage: 15, projectileCount: 2, cooldown: 1.9 },
+      { damage: 18, projectileCount: 3, cooldown: 1.5 },
     ],
     evolution: {
       weaponId: "w_advancedMissile",
@@ -62,11 +62,11 @@ export const WEAPONS_DB = {
     maxLevel: 5,
     tags: ["projectile", "auto-aim"],
     levels: [
-      { damage: 7, projectileCount: 1 },
-      { damage: 9, projectileCount: 1 },
-      { damage: 9, projectileCount: 2 },
-      { damage: 12, projectileCount: 2 },
-      { damage: 12, projectileCount: 3 },
+      { damage: 7, projectileCount: 1, cooldown: 2.5 },
+      { damage: 9, projectileCount: 1, cooldown: 2.3 },
+      { damage: 9, projectileCount: 2, cooldown: 2.1 },
+      { damage: 12, projectileCount: 2, cooldown: 1.9 },
+      { damage: 12, projectileCount: 3, cooldown: 1.5 },
     ],
     evolution: {
       weaponId: "w_holyWand",
@@ -81,10 +81,10 @@ export const WEAPONS_DB = {
     tags: ["aura", "melee"],
     levels: [
       { dps: 6, radius: 1.0 },
-      { dps: 8, radius: 1.0 },
       { dps: 8, radius: 1.15 },
-      { dps: 11, radius: 1.15 },
-      { dps: 11, radius: 1.3 },
+      { dps: 8, radius: 1.3 },
+      { dps: 11, radius: 1.4 },
+      { dps: 11, radius: 1.9 },
     ],
     evolution: {
       weaponId: "w_soulEater",
@@ -98,11 +98,11 @@ export const WEAPONS_DB = {
     maxLevel: 5,
     tags: ["ground", "aoe"],
     levels: [
-      { dps: 10, duration: 2.0, area: 1.0 },
-      { dps: 12, duration: 2.0, area: 1.0 },
-      { dps: 12, duration: 2.5, area: 1.0 },
-      { dps: 12, duration: 2.5, area: 1.15 },
-      { dps: 15, duration: 2.5, area: 1.15 },
+      { dps: 10, duration: 1.0, area: 1.0, cooldown: 2.5 },
+      { dps: 12, duration: 2.0, area: 1.0, cooldown: 2.3 },
+      { dps: 12, duration: 2.0, area: 1.1, cooldown: 2.1 },
+      { dps: 12, duration: 2.2, area: 1.15, cooldown: 1.9 },
+      { dps: 15, duration: 2.5, area: 1.25, cooldown: 1.5 },
     ],
     evolution: {
       weaponId: "w_laBorra",
@@ -116,11 +116,11 @@ export const WEAPONS_DB = {
     maxLevel: 5,
     tags: ["orbital", "defense"],
     levels: [
-      { dps: 7, count: 1, duration: 1.0 },
-      { dps: 7, count: 2, duration: 1.0 },
-      { dps: 7, count: 2, duration: 1.2 },
-      { dps: 7, count: 3, duration: 1.2 },
-      { dps: 7, count: 4, duration: 1.2, cooldownMult: 0.9 },
+      { dps: 12, count: 1, duration: 1.0 },
+      { dps: 14, count: 2, duration: 1.0 },
+      { dps: 14, count: 2, duration: 1.2 },
+      { dps: 17, count: 3, duration: 1.2 },
+      { dps: 19, count: 4, duration: 1.2, cooldownMult: 0.9 },
     ],
     evolution: {
       weaponId: "w_unchainedSpirits",
@@ -134,11 +134,11 @@ export const WEAPONS_DB = {
     maxLevel: 5,
     tags: ["aoe", "random"],
     levels: [
-      { damage: 14, boltCount: 1 },
-      { damage: 17, boltCount: 1 },
-      { damage: 17, boltCount: 2 },
-      { damage: 21, boltCount: 2 },
-      { damage: 21, boltCount: 3 },
+      { damage: 14, boltCount: 1, cooldown: 1.0 },
+      { damage: 17, boltCount: 1, cooldown: 0.9 },
+      { damage: 17, boltCount: 2, cooldown: 0.8 },
+      { damage: 21, boltCount: 2, cooldown: 0.7 },
+      { damage: 21, boltCount: 3, cooldown: 0.6 },
     ],
     evolution: {
       weaponId: "w_thunderLoop",
@@ -152,11 +152,11 @@ export const WEAPONS_DB = {
     maxLevel: 5,
     tags: ["projectile", "explosive"],
     levels: [
-      { damage: 10, projectileCount: 1, explosionRadius: 1.0 },
-      { damage: 13, projectileCount: 1, explosionRadius: 1.0 },
-      { damage: 13, projectileCount: 1, explosionRadius: 1.15 },
-      { damage: 13, projectileCount: 2, explosionRadius: 1.15 },
-      { damage: 17, projectileCount: 2, explosionRadius: 1.15 },
+      { damage: 10, projectileCount: 1, explosionRadius: 1.0, cooldown: 2.5 },
+      { damage: 13, projectileCount: 1, explosionRadius: 1.0, cooldown: 2.3 },
+      { damage: 13, projectileCount: 1, explosionRadius: 1.15, cooldown: 2.1 },
+      { damage: 13, projectileCount: 2, explosionRadius: 1.15, cooldown: 1.9 },
+      { damage: 17, projectileCount: 2, explosionRadius: 1.15, cooldown: 1.5 },
     ],
     evolution: {
       weaponId: "w_hellfire",
@@ -434,4 +434,3 @@ export function getPassive(id) {
 export function getEvolution(id) {
   return EVOLUTIONS_DB[id] || null;
 }
-
