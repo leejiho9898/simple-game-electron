@@ -116,11 +116,11 @@ export const WEAPONS_DB = {
     maxLevel: 5,
     tags: ["orbital", "defense"],
     levels: [
-      { dps: 12, count: 1, duration: 1.0 },
-      { dps: 14, count: 2, duration: 1.0 },
-      { dps: 14, count: 2, duration: 1.2 },
-      { dps: 17, count: 3, duration: 1.2 },
-      { dps: 19, count: 4, duration: 1.2, cooldownMult: 0.9 },
+      { dps: 18, count: 1, duration: 1.0 },
+      { dps: 20, count: 2, duration: 1.0 },
+      { dps: 20, count: 2, duration: 1.2 },
+      { dps: 22, count: 3, duration: 1.2 },
+      { dps: 24, count: 4, duration: 1.2, cooldownMult: 0.9 },
     ],
     evolution: {
       weaponId: "w_unchainedSpirits",

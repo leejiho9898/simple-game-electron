@@ -269,19 +269,13 @@ export class WeaponSystem {
     });
   }
 
-  // 1. Whip - 넓은 범위 좌우 번갈아 스윙 (레벨 3 이상: 양옆 동시)
+  // 1. Whip - 좌우 동시 스윙
   updateWhip(weapon, playerPos, gameTime) {
     if (weapon.cooldownTimer >= weapon.cooldown) {
       weapon.cooldownTimer = 0;
 
-      // 레벨 3 이상: 양옆 동시 스윙
-      if (weapon.level >= 3) {
-        weapon.swingDirections = [1, -1]; // 양옆 동시
-      } else {
-        // 레벨 3 미만: 좌우 번갈아
-        weapon.swingDirection *= -1;
-        weapon.swingDirections = [weapon.swingDirection];
-      }
+      // 항상 좌우 동시 스윙
+      weapon.swingDirections = [1, -1];
 
       weapon.lastSwingTime = gameTime;
       weapon.isSwinging = true;
@@ -981,60 +975,70 @@ export class WeaponSystem {
     const swingAngle = Math.PI / (isEvolution ? 2.0 : 2.5); // 진화는 더 넓은 각도
     const progress = weapon.swingProgress / 0.3;
 
-    // 레벨 3 이상: 양옆 동시, 미만: 한쪽만
-    const swingDirections = weapon.swingDirections || [
-      weapon.swingDirection || 1,
-    ];
+    // 좌우 동시 스윙
+    const swingDirections = weapon.swingDirections || [1, -1];
 
-    // 각 방향에 대해 렌더링
+    // 각 방향에 대해 렌더링 (좌우 각각 180도 커버)
     swingDirections.forEach((direction) => {
-      const angle = direction === 1 ? Math.PI / 4 : -Math.PI / 4;
+      // 우측: 0 ~ Math.PI (오른쪽 반원), 좌측: -Math.PI ~ 0 (왼쪽 반원)
+      const centerAngle = direction === 1 ? Math.PI / 2 : -Math.PI / 2;
+      const ellipseRadiusX = range * 0.8;
+      const ellipseRadiusY = range * 0.35; // 납작한 타원
+      const centerOffset = range * 0.4;
+      const centerX = playerPos.x + Math.cos(centerAngle) * centerOffset;
+      const centerY = playerPos.y + Math.sin(centerAngle) * centerOffset;
 
       if (isEvolution) {
         // 피눈물: 어두운 빨강 + 피 효과
-        // 외곽 선 (어두운 빨강)
+        // 외곽 타원 (어두운 빨강)
         ctx.strokeStyle = "#8b0000";
         ctx.lineWidth = 8;
         ctx.beginPath();
-        ctx.arc(
-          playerPos.x,
-          playerPos.y,
-          range,
-          angle - swingAngle * (1 - progress),
-          angle + swingAngle * (1 - progress)
+        ctx.ellipse(
+          centerX,
+          centerY,
+          ellipseRadiusX,
+          ellipseRadiusY * (1 - progress * 0.3),
+          centerAngle,
+          -Math.PI / 2,
+          Math.PI / 2
         );
         ctx.stroke();
 
-        // 중간 선 (진한 빨강)
+        // 중간 타원 (진한 빨강)
         ctx.strokeStyle = "#cc0000";
         ctx.lineWidth = 6;
         ctx.beginPath();
-        ctx.arc(
-          playerPos.x,
-          playerPos.y,
-          range * 0.95,
-          angle - swingAngle * (1 - progress),
-          angle + swingAngle * (1 - progress)
+        ctx.ellipse(
+          centerX,
+          centerY,
+          ellipseRadiusX * 0.95,
+          ellipseRadiusY * 0.9 * (1 - progress * 0.3),
+          centerAngle,
+          -Math.PI / 2,
+          Math.PI / 2
         );
         ctx.stroke();
 
-        // 내부 선 (밝은 빨강)
+        // 내부 타원 (밝은 빨강)
         ctx.strokeStyle = "#ff0000";
         ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.arc(
-          playerPos.x,
-          playerPos.y,
-          range * 0.9,
-          angle - swingAngle * (1 - progress),
-          angle + swingAngle * (1 - progress)
+        ctx.ellipse(
+          centerX,
+          centerY,
+          ellipseRadiusX * 0.9,
+          ellipseRadiusY * 0.8 * (1 - progress * 0.3),
+          centerAngle,
+          -Math.PI / 2,
+          Math.PI / 2
         );
         ctx.stroke();
 
         // 피 파티클 효과
-        const endAngle = angle + swingAngle * (1 - progress) * direction;
-        const endX = playerPos.x + Math.cos(endAngle) * range;
-        const endY = playerPos.y + Math.sin(endAngle) * range;
+        const endAngle = centerAngle;
+        const endX = centerX + Math.cos(endAngle) * ellipseRadiusX;
+        const endY = centerY + Math.sin(endAngle) * ellipseRadiusY;
 
         // 큰 피 방울
         ctx.fillStyle = "#8b0000";
@@ -1063,30 +1067,34 @@ export class WeaponSystem {
         ctx.strokeStyle = "#cc0000";
         ctx.lineWidth = 6;
         ctx.beginPath();
-        ctx.arc(
-          playerPos.x,
-          playerPos.y,
-          range,
-          angle - swingAngle * (1 - progress),
-          angle + swingAngle * (1 - progress)
+        ctx.ellipse(
+          centerX,
+          centerY,
+          ellipseRadiusX,
+          ellipseRadiusY * (1 - progress * 0.3),
+          centerAngle,
+          -Math.PI / 2,
+          Math.PI / 2
         );
         ctx.stroke();
 
         ctx.strokeStyle = "#ff6b6b";
         ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.arc(
-          playerPos.x,
-          playerPos.y,
-          range * 0.9,
-          angle - swingAngle * (1 - progress),
-          angle + swingAngle * (1 - progress)
+        ctx.ellipse(
+          centerX,
+          centerY,
+          ellipseRadiusX * 0.9,
+          ellipseRadiusY * 0.8 * (1 - progress * 0.3),
+          angle,
+          -swingAngle,
+          swingAngle
         );
         ctx.stroke();
 
-        const endAngle = angle + swingAngle * (1 - progress) * direction;
-        const endX = playerPos.x + Math.cos(endAngle) * range;
-        const endY = playerPos.y + Math.sin(endAngle) * range;
+        const endAngle = centerAngle;
+        const endX = centerX + Math.cos(endAngle) * ellipseRadiusX;
+        const endY = centerY + Math.sin(endAngle) * ellipseRadiusY;
 
         ctx.fillStyle = "#ff0000";
         ctx.beginPath();
@@ -1247,6 +1255,23 @@ export class WeaponSystem {
       ctx.beginPath();
       ctx.arc(proj.x, proj.y, proj.radius * 1.5, 0, Math.PI * 2);
       ctx.stroke();
+    }
+    // 화염 지팡이: 주황색 탄
+    else if (proj.weaponId === "w_fireWand") {
+      ctx.fillStyle = "#ff7f00";
+      ctx.beginPath();
+      ctx.arc(proj.x, proj.y, proj.radius * 1.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ffaa33";
+      ctx.beginPath();
+      ctx.arc(proj.x, proj.y, proj.radius * 0.8, 0, Math.PI * 2);
+      ctx.fill();
+      if (proj.hasExploded) {
+        ctx.fillStyle = "rgba(255, 140, 0, 0.5)";
+        ctx.beginPath();
+        ctx.arc(proj.x, proj.y, proj.explosionRadius, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
     // 지옥불: 더 큰 빨간 투사체
     else if (proj.weaponId === "w_hellfire") {
@@ -1470,30 +1495,28 @@ export class WeaponSystem {
             const distance = Math.sqrt(dx * dx + dy * dy);
             const enemyAngle = Math.atan2(dy, dx);
 
-            // 각 방향에 대해 충돌 체크
+            // 각 방향에 대해 충돌 체크 (좌우 각각 180도 커버)
             for (const direction of swingDirections) {
-              const angle = direction === 1 ? Math.PI / 4 : -Math.PI / 4;
-
-              // 부채꼴 범위 체크 (스윙 진행도 반영)
-              const minAngle = angle - swingAngle * (1 - progress);
-              const maxAngle = angle + swingAngle * (1 - progress);
-
-              // 각도 범위 체크 (각도 정규화)
+              // 우측: 0 ~ Math.PI (오른쪽 반원), 좌측: -Math.PI ~ 0 (왼쪽 반원)
               let angleInRange = false;
-              if (minAngle <= maxAngle) {
-                // 일반적인 경우
-                angleInRange = enemyAngle >= minAngle && enemyAngle <= maxAngle;
-              } else {
-                // 각도가 -PI ~ PI 경계를 넘는 경우
-                angleInRange = enemyAngle >= minAngle || enemyAngle <= maxAngle;
+              if (direction === 1) {
+                // 우측: 0 ~ Math.PI (오른쪽 반원, x >= 0)
+                angleInRange = enemyAngle >= 0 && enemyAngle <= Math.PI;
+              } else if (direction === -1) {
+                // 좌측: -Math.PI ~ 0 (왼쪽 반원, x < 0)
+                // Math.atan2는 -Math.PI ~ Math.PI 범위를 반환
+                angleInRange = enemyAngle >= -Math.PI && enemyAngle <= 0;
               }
 
               if (distance < range + enemy.radius && angleInRange) {
                 const lastHitTime = weapon.enemyHitTimes.get(index) || 0;
                 if (gameTime - lastHitTime >= 0.1) {
-                  hits.push({ enemyIndex: index, damage: weapon.damage });
-                  weapon.enemyHitTimes.set(index, gameTime);
-                  break; // 한 번만 히트
+                  const damage = weapon.damage || 0;
+                  if (damage > 0) {
+                    hits.push({ enemyIndex: index, damage: damage });
+                    weapon.enemyHitTimes.set(index, gameTime);
+                    break; // 한 번만 히트
+                  }
                 }
               }
             }
@@ -1538,12 +1561,12 @@ export class WeaponSystem {
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance < enemy.radius + 8) {
-              const lastHitTime = weapon.enemyHitTimes.get(index) || 0;
-              if (gameTime - lastHitTime >= weapon.cooldown) {
-                hits.push({ enemyIndex: index, damage: weapon.damage || 0 });
-                weapon.enemyHitTimes.set(index, gameTime);
-                break; // 한 번만 히트
-              }
+              // 지속 피해 (dps 기반, Garlic처럼 매 프레임 피해)
+              hits.push({
+                enemyIndex: index,
+                damage: (weapon.dps || 0) / 60,
+              });
+              break; // 한 번만 히트
             }
           }
         });

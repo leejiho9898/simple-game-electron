@@ -62,6 +62,22 @@ class Game {
     // Chest 오브젝트 배열
     this.chests = [];
 
+    // 엘리트 몹 이미지
+    this.eliteEnemyImage = new Image();
+    this.eliteEnemyImage.src = "./assets/eletemob.png";
+    this.eliteEnemyImageLoaded = false;
+    this.eliteEnemyImage.onload = () => {
+      this.eliteEnemyImageLoaded = true;
+    };
+
+    // 플레이어 이미지
+    this.playerImage = new Image();
+    this.playerImage.src = "./assets/me.png";
+    this.playerImageLoaded = false;
+    this.playerImage.onload = () => {
+      this.playerImageLoaded = true;
+    };
+
     // 키 입력 상태
     this.keys = {};
 
@@ -81,13 +97,39 @@ class Game {
   }
 
   setupEventListeners() {
-    // 키보드 입력 감지
+    // 키보드 입력 감지 (한글 입력 문제 해결: code 사용)
     window.addEventListener("keydown", (e) => {
-      this.keys[e.key.toLowerCase()] = true;
+      // 한글 입력 중에도 작동하도록 code 사용
+      if (
+        e.code === "KeyW" ||
+        e.code === "KeyS" ||
+        e.code === "KeyA" ||
+        e.code === "KeyD"
+      ) {
+        const key = e.code.replace("Key", "").toLowerCase();
+        this.keys[key] = true;
+        e.preventDefault(); // 한글 입력 방지
+      } else {
+        // 다른 키는 기존 방식 유지
+        this.keys[e.key.toLowerCase()] = true;
+      }
     });
 
     window.addEventListener("keyup", (e) => {
-      this.keys[e.key.toLowerCase()] = false;
+      // 한글 입력 중에도 작동하도록 code 사용
+      if (
+        e.code === "KeyW" ||
+        e.code === "KeyS" ||
+        e.code === "KeyA" ||
+        e.code === "KeyD"
+      ) {
+        const key = e.code.replace("Key", "").toLowerCase();
+        this.keys[key] = false;
+        e.preventDefault(); // 한글 입력 방지
+      } else {
+        // 다른 키는 기존 방식 유지
+        this.keys[e.key.toLowerCase()] = false;
+      }
     });
   }
 
@@ -455,7 +497,25 @@ class Game {
       const dy = this.playerPos.y - orb.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
 
-      // 수집 체크 (플레이어가 직접 접촉해야만 획득)
+      // 자석 구슬 패시브 범위 내에서만 플레이어에게 끌림
+      // pickupRadius 기본값(1.0)을 제외한 증가분만 사용해 자석 범위 결정
+      const pickupRadius = this.state.player.pickupRadius || 1.0;
+      const passiveRadius =
+        pickupRadius > 1.0
+          ? (pickupRadius - 1.0) * 200 // 레벨당 약 200px 확장 (더 넓은 범위)
+          : 0;
+
+      if (passiveRadius > 0 && distance < passiveRadius) {
+        // 거리에 따라 속도 조절 (가까울수록 빠르게)
+        const speedMultiplier = 1 + (passiveRadius - distance) / passiveRadius;
+        orb.speed = Math.min(orb.speed + 0.4 * speedMultiplier, 10); // 최대 속도 제한 증가
+        if (distance > 0) {
+          orb.x += (dx / distance) * orb.speed;
+          orb.y += (dy / distance) * orb.speed;
+        }
+      }
+
+      // 수집 체크
       if (distance < this.playerPos.radius + orb.radius) {
         this.gainExp(orb.value);
         orb.collected = true;
@@ -598,17 +658,32 @@ class Game {
       }
 
       // 적 본체
-      this.ctx.fillStyle = enemy.color;
-      this.ctx.beginPath();
-      this.ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2);
-      this.ctx.fill();
-
-      // 엘리트 내부 강조
-      if (isElite) {
-        this.ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+      if (isElite && this.eliteEnemyImageLoaded) {
+        // 엘리트 몹 이미지 사용
+        const imageSize = enemy.radius * 2;
+        this.ctx.save();
+        this.ctx.drawImage(
+          this.eliteEnemyImage,
+          enemy.x - enemy.radius,
+          enemy.y - enemy.radius,
+          imageSize,
+          imageSize
+        );
+        this.ctx.restore();
+      } else {
+        // 일반 적은 원형으로 렌더링
+        this.ctx.fillStyle = enemy.color;
         this.ctx.beginPath();
-        this.ctx.arc(enemy.x, enemy.y, enemy.radius * 0.6, 0, Math.PI * 2);
+        this.ctx.arc(enemy.x, enemy.y, enemy.radius, 0, Math.PI * 2);
         this.ctx.fill();
+
+        // 엘리트 내부 강조 (이미지가 로드되지 않았을 때만)
+        if (isElite && !this.eliteEnemyImageLoaded) {
+          this.ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+          this.ctx.beginPath();
+          this.ctx.arc(enemy.x, enemy.y, enemy.radius * 0.6, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
       }
 
       // HP 바 (엘리트는 더 두껍게)
@@ -640,6 +715,7 @@ class Game {
     });
 
     // 플레이어 그리기
+    // 그림자
     this.ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
     this.ctx.beginPath();
     this.ctx.arc(
@@ -651,16 +727,31 @@ class Game {
     );
     this.ctx.fill();
 
-    this.ctx.fillStyle = this.playerPos.color;
-    this.ctx.beginPath();
-    this.ctx.arc(
-      this.playerPos.x,
-      this.playerPos.y,
-      this.playerPos.radius,
-      0,
-      Math.PI * 2
-    );
-    this.ctx.fill();
+    // 플레이어 이미지 또는 기본 원형
+    if (this.playerImageLoaded) {
+      const imageSize = this.playerPos.radius * 2;
+      this.ctx.save();
+      this.ctx.drawImage(
+        this.playerImage,
+        this.playerPos.x - this.playerPos.radius,
+        this.playerPos.y - this.playerPos.radius,
+        imageSize,
+        imageSize
+      );
+      this.ctx.restore();
+    } else {
+      // 이미지가 로드되지 않았을 때 기본 원형 표시
+      this.ctx.fillStyle = this.playerPos.color;
+      this.ctx.beginPath();
+      this.ctx.arc(
+        this.playerPos.x,
+        this.playerPos.y,
+        this.playerPos.radius,
+        0,
+        Math.PI * 2
+      );
+      this.ctx.fill();
+    }
 
     // 플레이어 HP 바
     const hpPercent = this.state.player.hp / this.state.player.hpMax;
